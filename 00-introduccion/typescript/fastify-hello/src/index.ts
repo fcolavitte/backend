@@ -147,6 +147,69 @@ app.get(
   },
 );
 
+
+
+// ---------------------------------------------------------------------------
+// Endpoint version
+// ---------------------------------------------------------------------------
+app.get(
+  "/version",
+  {
+    schema: {
+      summary: "Version check",
+      description: "Verifica la version del backend",
+      response: {
+        200: {
+          type: "object",
+          properties: {
+            version: { type: "string", description: "Version del backend" },
+          },
+        },
+      },
+    },
+  },
+  async () => {
+    return { version: "v0.1.0" };
+  },
+);
+
+
+// ---------------------------------------------------------------------------
+// Endpoint saludo - parámetro de ruta
+// ---------------------------------------------------------------------------
+app.get(
+  "/saludo/:nombre",
+  {
+    schema: {
+      summary: "Saludo",
+      description: "Retorna un saludo al nombre",
+      params: {
+        type: "object",
+        properties: {
+          nombre: { type: "string", description: "Nombre de la persona" },
+        },
+        required: ["nombre"],
+      },
+      response: {
+        200: {
+          type: "object",
+          properties: {
+            message: { type: "string", description: "Un saludo" },
+          },
+        },
+      },
+    },
+    preHandler: async (request, reply) => {
+      console.log("Petición recibida");
+    },
+  },
+  async (request) => {
+	const { nombre } = request.params as { nombre: string };
+    return { message: `¡Hola, ${nombre}!` };
+  },
+);
+
+
 // ===========================================================================
 // Inicio del servidor
 // ===========================================================================
@@ -166,5 +229,6 @@ const start = async (): Promise<void> => {
     process.exit(1);
   }
 };
+
 
 start();
