@@ -20,6 +20,22 @@ Documentación interactiva (una vez ejecutando):
 """
 
 from fastapi import FastAPI
+import logging
+
+VERSION = "0.1.0"
+
+
+# ---------------------------------------------------------------------------
+# Configuración del logging
+# ---------------------------------------------------------------------------
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
+
 
 # ---------------------------------------------------------------------------
 # Instancia de la aplicación
@@ -29,7 +45,7 @@ from fastapi import FastAPI
 app = FastAPI(
     title="Hola Mundo - FastAPI",
     description="API de ejemplo para el curso de Desarrollo Web - Backend",
-    version="0.1.0",
+    version=VERSION,
     # Los docs se sirven en /docs por defecto, se puede personalizar:
     # docs_url="/api/docs",
 )
@@ -44,7 +60,7 @@ app = FastAPI(
 #   - El tipo de retorno (dict → JSON)
 #   - El schema OpenAPI a partir del type hint de retorno
 @app.get("/")
-def read_root():
+def read_root(name: str = "default"):
     """
     Endpoint raíz.
     Retorna un mensaje de bienvenida.
@@ -54,7 +70,11 @@ def read_root():
     - Inferencia automática de tipo de respuesta (dict → JSON)
     - Documentación automática generada desde el docstring y los tipos
     """
-    return {"message": "¡Hola, mundo desde FastAPI!"}
+    logger.info(f"Petición recibida en / con name={name}")
+    if name != "default":
+        return {"message": f"¡Hola, {name}!"}
+    else:
+        return {"message": "¡Hola, mundo desde FastAPI!"}
 
 
 # ---------------------------------------------------------------------------
@@ -72,4 +92,14 @@ def health_check():
     Es una buena práctica separar los endpoints de monitoreo
     de los endpoints de negocio.
     """
+    logger.info("Petición recibida en /health")
     return {"status": "ok", "service": "fastapi-hello"}
+
+
+
+# ---------------------------------------------------------------------------
+# Endpoint de version
+# ---------------------------------------------------------------------------
+@app.get("/version")
+def version_check():
+    return {"message": VERSION}
