@@ -1,0 +1,22 @@
+[project]
+name = "04-autenticacion-seguridad-backend"
+version = "0.1.0"
+description = "API de Usuarios — Autenticación JWT + Seguridad OWASP"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "sqlmodel>=0.0.22",
+    "psycopg2-binary>=2.9.0",
+    "python-dotenv>=1.0.0",
+    "pwdlib[argon2]>=0.2.0",
+    "pyjwt>=2.9.0",
+    "email-validator>=2.1.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]

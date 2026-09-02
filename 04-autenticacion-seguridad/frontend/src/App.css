@@ -1,0 +1,107 @@
+.app h1 {
+  font-size: 1.8rem;
+  margin-bottom: 1.2rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.tabs button {
+  flex: 1;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+}
+
+.tabs button.active {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+}
+
+.auth-form input {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+.auth-form input::placeholder {
+  color: #64748b;
+}
+
+button {
+  padding: 0.6rem 0.8rem;
+  border: none;
+  border-radius: 8px;
+  background: #3b82f6;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button:disabled {
+  background: #334155;
+  cursor: not-allowed;
+}
+
+button.logout {
+  background: #ef4444;
+  width: 100%;
+}
+
+.error {
+  color: #fca5a5;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.profile {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.profile .label {
+  color: #64748b;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.8rem;
+}
+
+.profile .label:first-child {
+  margin-top: 0;
+}
+
+.profile .value {
+  color: #e2e8f0;
+  font-size: 1.05rem;
+}
+
+.hint {
+  margin-top: 1.2rem;
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.hint code {
+  color: #93c5fd;
+  background: #1e293b;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.8em;
+}

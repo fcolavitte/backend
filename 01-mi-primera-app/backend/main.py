@@ -29,11 +29,18 @@ from pydantic import BaseModel, Field
 # sean del tipo correcto. Si mandás un string donde va un int,
 # FastAPI devuelve un error 422 claro y descriptivo.
 
+def str_prioridad(num: int):
+    if num == 1:
+        return 'media'
+    if num == 2:
+        return 'alta'
+    return 'baja'
 
 class TaskCreate(BaseModel):
     """Modelo para CREAR una tarea. Solo pedimos el título."""
 
     title: str = Field(..., min_length=1, max_length=200, examples=["Comprar leche"])
+    priority: int = 0
 
 
 class Task(BaseModel):
@@ -43,6 +50,7 @@ class Task(BaseModel):
     title: str
     completed: bool
     created_at: str
+    priority: int = 0
 
 
 # ============================================================
@@ -126,6 +134,7 @@ def create_task(body: TaskCreate):
     task = {
         "id": next_id,
         "title": body.title.strip(),
+        "priority": body.priority,
         "completed": False,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }

@@ -1,0 +1,335 @@
+{
+  "info": {
+    "name": "04 - Autenticacion y Seguridad - Backend (tests)",
+    "description": "Casos de prueba para la API del Modulo 04 (FastAPI + SQLModel + JWT + Argon2). Backend en http://localhost:8000\n\nFlujo Feliz: register -> login -> /me con token.\nCasos limite: 422 (email/password invalidos), 409 (email duplicado), 401 (login invalido y ruta protegida sin token).\n\nPara correr todo de una: Collection Runner (boton Run). El token se guarda automaticamente en la variable {{access_token}} al loguearse.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Flujo Feliz",
+      "item": [
+        {
+          "name": "1. Health check (verifica servicio y base)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/health",
+            "description": "GET /api/health. Pasa por controller -> service -> repository. El count() del repository hace el SELECT COUNT de users. Si responde, toda la cadena funciona."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"BBDD conectada\", () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.status).to.eql(\"Funciona\");",
+                  "  pm.expect(body.db).to.eql(\"conectada\");",
+                  "  pm.expect(typeof body.users_count).to.eql(\"number\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Registrar usuario valido",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"juan@ejemplo.com\",\n    \"password\": \"supersecreto123\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/register",
+            "description": "POST /api/auth/register. Crea un usuario con la contraseña hasheada (Argon2). Devuelve 201 y el UserRead SIN hashed_password. CLAVE: la respuesta NO debe incluir hashed_password."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Estructura de usuario\", () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property(\"id\");",
+                  "  pm.expect(body).to.have.property(\"email\");",
+                  "  pm.expect(body).to.have.property(\"created_at\");",
+                  "});",
+                  "pm.test(\"NO expone hashed_password\", () => {",
+                  "  pm.expect(pm.response.json()).to.not.have.property(\"hashed_password\");",
+                  "  pm.expect(pm.response.json()).to.not.have.property(\"password\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Login con credenciales correctas",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"juan@ejemplo.com\",\n    \"password\": \"supersecreto123\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/login",
+            "description": "POST /api/auth/login. Verifica credenciales (verify_password con Argon2) y emite un JWT firmado. El token se guarda en {{access_token}} para el siguiente request."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve token\", () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property(\"access_token\");",
+                  "  pm.expect(body.token_type).to.eql(\"bearer\");",
+                  "});",
+                  "pm.test(\"Guardar token en variable\", () => {",
+                  "  pm.collectionVariables.set(\"access_token\", pm.response.json().access_token);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. GET /me con token valido",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/users/me",
+            "description": "GET /api/users/me. Ruta protegida: get_current_user decodifica el token, extrae el sub (id) y busca el usuario. Devuelve el usuario autenticado SIN el hash."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Es el usuario registrado\", () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.email).to.eql(\"juan@ejemplo.com\");",
+                  "});",
+                  "pm.test(\"No expone hash\", () => {",
+                  "  pm.expect(pm.response.json()).to.not.have.property(\"hashed_password\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Casos limite",
+      "item": [
+        {
+          "name": "1. Register email mal formado -> 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"esto-no-es-un-email\",\n    \"password\": \"supersecreto123\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/register",
+            "description": "EmailStr (pydantic) rechaza emails mal formados. 422."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Register password corta -> 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"corto@ejemplo.com\",\n    \"password\": \"123\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/register",
+            "description": "min_length=8 en UserCreate.password. 422."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Register email duplicado -> 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"juan@ejemplo.com\",\n    \"password\": \"otraclave123\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/register",
+            "description": "El email ya existe (registrado en el flujo feliz). El service devuelve None y el controller lo traduce a 409 Conflict."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Detail email ya registrado\", () => {",
+                  "  pm.expect(pm.response.json().detail).to.include(\"ya est\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Login contraseña incorrecta -> 401 generico",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"juan@ejemplo.com\",\n    \"password\": \"incorrecta\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/login",
+            "description": "Contraseña incorrecta. Devuelve 401 con mensaje GENERICO (igual que email inexistente) para evitar user enumeration."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Mensaje generico\", () => {",
+                  "  pm.expect(pm.response.json().detail).to.eql(\"Email o contraseña incorrectos\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Login email inexistente -> 401 (mismo mensaje)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"noexiste@ejemplo.com\",\n    \"password\": \"loquesea123\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/login",
+            "description": "Email inexistente. Debe devolver EXACTAMENTE el mismo 401 y mensaje que la contraseña incorrecta. Si devolviera distinto, habria user enumeration."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Mismo mensaje generico\", () => {",
+                  "  pm.expect(pm.response.json().detail).to.eql(\"Email o contraseña incorrectos\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. GET /me sin token -> 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/users/me",
+            "description": "Ruta protegida SIN token. OAuth2PasswordBearer no encuentra el header Authorization y devuelve 401 antes de ejecutar el endpoint."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. GET /me con token invalido -> 401",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer token-falso-invalido" }
+            ],
+            "url": "{{base_url}}/api/users/me",
+            "description": "Token invalido (firma falsa). jwt.decode lanza InvalidTokenError y get_current_user lo traduce a 401. La firma detecta cualquier alteracion."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

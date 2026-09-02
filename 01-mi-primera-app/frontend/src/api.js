@@ -58,7 +58,7 @@ export async function fetchTasks() {
 export async function createTask(title) {
   return request("/tasks", {
     method: "POST",
-    body: JSON.stringify({ title }),
+    body: JSON.stringify({ "title": title, "priority": 0 }),
   });
 }
 

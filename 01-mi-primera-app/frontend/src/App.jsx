@@ -137,6 +137,7 @@ export default function App() {
                   onChange={() => handleToggle(task.id)}
                 />
                 <span className="task-title">{task.title}</span>
+                <span className="task-title">- Prioridad: {task.priority}</span>
               </label>
               <button
                 className="delete-button"
