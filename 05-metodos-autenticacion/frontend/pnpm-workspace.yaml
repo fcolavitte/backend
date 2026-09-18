@@ -1,0 +1,11 @@
+# Workspace de pnpm — configuración del proyecto
+#
+# pnpm bloquea build scripts de dependencias por defecto (política de
+# seguridad). Esbuild (usado por Vite) necesita el suyo para bajar el
+# binario nativo, así que lo permitimos EXPLÍCITAMENTE.
+#
+# ¿Por qué pnpm y no npm? El npm registry/CLI está bloqueado en la
+# facultad; pnpm es la vía oficial del curso para frontends.
+# Nunca generes package-lock.json (npm) en este repo.
+allowBuilds:
+  esbuild: true

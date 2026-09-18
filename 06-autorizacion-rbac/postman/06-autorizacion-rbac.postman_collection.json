@@ -1,0 +1,231 @@
+{
+  "info": {
+    "_postman_id": "06-autorizacion-rbac",
+    "name": "06 · Autorización RBAC — Matriz de autorización",
+    "description": "Módulo 06 — Desarrollo de Software 2026 (UTN). Casos de la matriz de autorización. Usuarios demo (password demo12345): admin@acme.com, editor@acme.com, viewer@acme.com, admin@globex.com. Documentos: #1 público · #2 privado admin · #3 privado editor · #4 público · #5 privado Globex.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0 · Health",
+      "item": [
+        {
+          "name": "GET /api/health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "1 · Auth",
+      "item": [
+        {
+          "name": "POST /register (nace viewer)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alumno@ejemplo.com\",\n  \"name\": \"Alumno\",\n  \"password\": \"demo12345\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/register"
+          }
+        },
+        {
+          "name": "POST /login admin@acme.com",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@acme.com\",\n  \"password\": \"demo12345\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login",
+            "description": "El token incluye claims role, tenant_id y scope. Copiá el access_token en la variable token para los requests siguientes."
+          }
+        },
+        {
+          "name": "POST /login viewer@acme.com (scope read)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"viewer@acme.com\",\n  \"password\": \"demo12345\",\n  \"scope\": \"read\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "POST /login admin con scope read (Pilar 3)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@acme.com\",\n  \"password\": \"demo12345\",\n  \"scope\": \"read\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login",
+            "description": "Admin pero token de SOLO LECTURA → no puede crear aunque sea admin."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 · Usuarios (admin)",
+      "item": [
+        {
+          "name": "GET /api/users → 200 (admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/users"
+          }
+        },
+        {
+          "name": "GET /api/users → 403 (viewer)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenViewer}}" }],
+            "url": "{{baseUrl}}/api/users"
+          }
+        },
+        {
+          "name": "PATCH /api/users/3/role → 200 (admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"role\": \"editor\"\n}" },
+            "url": "{{baseUrl}}/api/users/3/role"
+          }
+        },
+        {
+          "name": "PATCH /api/users/3/role → 403 (editor)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenEditor}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"role\": \"admin\"\n}" },
+            "url": "{{baseUrl}}/api/users/3/role"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 · Documentos — el IDOR",
+      "item": [
+        {
+          "name": "GET /documents/2 → 200 solo admin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/documents/2"
+          }
+        },
+        {
+          "name": "GET /documents/2 → 403 viewer (privado de otro)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenViewer}}" }],
+            "url": "{{baseUrl}}/api/documents/2"
+          }
+        },
+        {
+          "name": "GET /documents/5 → 403 (otra empresa, tenancy)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/documents/5"
+          }
+        },
+        {
+          "name": "POST /documents → 201 (editor)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenEditor}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Mi borrador\",\n  \"content\": \"Contenido del documento.\"\n}" },
+            "url": "{{baseUrl}}/api/documents"
+          }
+        },
+        {
+          "name": "POST /documents → 403 (viewer, scope read)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenViewer}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Hack\",\n  \"content\": \"x\"\n}" },
+            "url": "{{baseUrl}}/api/documents"
+          }
+        },
+        {
+          "name": "POST /documents → 403 (admin token read-only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenAdminReadOnly}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"No debería\",\n  \"content\": \"x\"\n}" },
+            "url": "{{baseUrl}}/api/documents"
+          }
+        },
+        {
+          "name": "PATCH /documents/2 → 403 (editor edita privado de otro)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenEditor}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"content\": \"x\"\n}" },
+            "url": "{{baseUrl}}/api/documents/2"
+          }
+        },
+        {
+          "name": "DELETE /documents/4 → 403 (editor no borra)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenEditor}}" }],
+            "url": "{{baseUrl}}/api/documents/4"
+          }
+        },
+        {
+          "name": "DELETE /documents/4 → 200 (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/documents/4"
+          }
+        },
+        {
+          "name": "POST /documents/3/publish → 200 (dueño, editor)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenEditor}}" }],
+            "url": "{{baseUrl}}/api/documents/3/publish"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:8000" },
+    { "key": "token", "value": "poner-token-admin" },
+    { "key": "tokenEditor", "value": "poner-token-editor" },
+    { "key": "tokenViewer", "value": "poner-token-viewer" },
+    { "key": "tokenAdminReadOnly", "value": "poner-token-admin-scope-read" }
+  ]
+}

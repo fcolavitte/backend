@@ -1,0 +1,505 @@
+/* Laboratorio Módulo 05 — estilo "pizarra de clase": oscuro, código legible. */
+
+:root {
+  --bg: #10141c;
+  --bg-panel: #171c27;
+  --bg-inset: #0e1118;
+  --border: #2a3344;
+  --text: #dde3ee;
+  --text-dim: #93a0b3;
+  --accent: #6ea8fe;
+  --accent-strong: #4c8df6;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --err: #f87171;
+  --rate: #f472b6;
+  --code-bg: #0d1220;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+code {
+  font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", Menlo, monospace;
+  font-size: 0.9em;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--accent);
+}
+
+code.wrap {
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+/* ── Layout ────────────────────────────────────────────────────────── */
+
+.app {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+}
+
+.app-header h1 {
+  margin: 0 0 4px;
+  font-size: 1.5rem;
+}
+
+.subtitle {
+  margin: 0 0 16px;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+
+/* ── HealthBar ─────────────────────────────────────────────────────── */
+
+.healthbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  align-items: baseline;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.healthbar.loading {
+  color: var(--text-dim);
+}
+
+.counter {
+  display: inline-flex;
+  flex-direction: column;
+  cursor: help;
+}
+
+.counter-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.counter-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.health-note {
+  margin-left: auto;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+}
+
+.health-error {
+  color: var(--err);
+  font-weight: 600;
+}
+
+/* ── Tabs ──────────────────────────────────────────────────────────── */
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.tabs button {
+  background: var(--bg-panel);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tabs button:hover {
+  color: var(--text);
+  border-color: var(--accent-strong);
+}
+
+.tabs button.active {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ── Panel ─────────────────────────────────────────────────────────── */
+
+.panel-area {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 24px;
+  margin-bottom: 16px;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.panel-num {
+  background: var(--accent-strong);
+  color: #fff;
+  font-weight: 700;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.lesson {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  margin: 0 0 18px;
+  border-left: 3px solid var(--accent);
+  padding-left: 12px;
+}
+
+.step {
+  margin-top: 18px;
+}
+
+.step h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+/* ── Formularios y botones ─────────────────────────────────────────── */
+
+.auth-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.auth-form input,
+.rate-email {
+  background: var(--bg-inset);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.92rem;
+  min-width: 200px;
+  flex: 1;
+}
+
+button {
+  background: var(--accent-strong);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+button:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Resultados ────────────────────────────────────────────────────── */
+
+.result {
+  margin-top: 14px;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+}
+
+.result.ok {
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+}
+
+.result.error {
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.result.error em {
+  color: var(--warn);
+  font-style: normal;
+  font-size: 0.82rem;
+}
+
+.result pre {
+  background: var(--bg-inset);
+  border-radius: 6px;
+  padding: 10px;
+  overflow-x: auto;
+  font-size: 0.8rem;
+}
+
+/* ── Perfil ────────────────────────────────────────────────────────── */
+
+.profile {
+  margin-top: 16px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 16px;
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 2px 14px;
+}
+
+.profile.empty {
+  display: block;
+  color: var(--text-dim);
+  font-size: 0.88rem;
+}
+
+.profile .label {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+.profile .value {
+  font-size: 0.92rem;
+}
+
+/* ── Elementos didácticos extra ────────────────────────────────────── */
+
+.header-preview,
+.oidc-steps,
+.rate-results {
+  margin-top: 14px;
+  background: var(--bg-inset);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.header-preview p {
+  margin: 0 0 8px;
+}
+
+.header-preview button {
+  background: transparent;
+  border: 1px solid var(--accent-strong);
+  color: var(--accent);
+  padding: 6px 10px;
+  font-size: 0.82rem;
+}
+
+.header-preview .decoded {
+  margin-top: 8px;
+  color: var(--warn);
+  font-size: 0.88rem;
+}
+
+.token-preview,
+.rate-email {
+  margin: 10px 0 0;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.decoded-jwt {
+  margin-top: 10px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  overflow-x: auto;
+  color: var(--ok);
+  font-size: 0.8rem;
+}
+
+.oidc-steps {
+  list-style: none;
+  padding-left: 14px;
+  margin: 10px 0 0;
+}
+
+.oidc-steps li {
+  padding: 3px 0;
+  color: var(--text);
+  font-size: 0.88rem;
+}
+
+/* ── Rate limit ────────────────────────────────────────────────────── */
+
+.rate-results {
+  list-style: none;
+  padding: 8px 14px;
+}
+
+.rate-intent {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.rate-intent .rate-num {
+  font-weight: 700;
+  min-width: 90px;
+}
+
+.rate-intent .rate-status {
+  font-weight: 600;
+  min-width: 190px;
+}
+
+.rate-intent.blocked .rate-status {
+  color: var(--rate);
+}
+
+.rate-intent .rate-detail {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+/* ── Consola ───────────────────────────────────────────────────────── */
+
+.request-log {
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.request-log h2 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.request-log.empty p {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.log-entries {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.log-entry {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 3px 0;
+  font-size: 0.82rem;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.badge {
+  min-width: 42px;
+  text-align: center;
+  font-weight: 700;
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-size: 0.75rem;
+}
+
+.badge.ok {
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--ok);
+}
+
+.badge.unauthorized {
+  background: rgba(251, 191, 36, 0.15);
+  color: var(--warn);
+}
+
+.badge.rate-limited {
+  background: rgba(244, 114, 182, 0.2);
+  color: var(--rate);
+}
+
+.badge.network-error {
+  background: rgba(248, 113, 113, 0.2);
+  color: var(--err);
+}
+
+.badge.other,
+.badge.pending {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-dim);
+}
+
+.log-method {
+  color: var(--accent);
+  font-weight: 700;
+  min-width: 46px;
+}
+
+.log-url {
+  color: var(--text);
+}
+
+.log-label {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.log-extra {
+  color: var(--rate);
+  font-style: normal;
+}
+
+/* ── Footer ────────────────────────────────────────────────────────── */
+
+.app-footer {
+  margin-top: 14px;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .profile {
+    grid-template-columns: 1fr;
+  }
+}

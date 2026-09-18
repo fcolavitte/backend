@@ -1,0 +1,89 @@
+# ──────────────────────────────────────────────────────────────────────────
+# Módulo 06 — Autorización RBAC · Docker Compose (portabilidad)
+#
+# Levanta TODO el entorno con un solo comando:
+#   docker compose up --build
+#
+#   · postgres (PostgreSQL 16, persistencia) → localhost:5432
+#   · backend  (FastAPI, puerto 8000)        → http://localhost:8000
+#   · frontend (Vite dev, puerto 5173)       → http://localhost:5173
+#
+# PERSISTENCIA: los usuarios y documentos viven en PostgreSQL, y el volumen
+# `pgdata` los conserva entre reinicios. Para arrancar de cero (devolver la
+# DB a su estado inicial) hay que bajar el volumen:
+#   docker compose down -v
+# El seed del backend es idempotente: siembra el dataset demo SOLO la
+# primera vez (si la DB ya tiene datos, no duplica nada).
+#
+# La verificación corre IGUAL que sin docker, desde el host:
+#   bash scripts/verificar_authz.sh      # → 44 checks sobre localhost:8000
+#
+# Los Dockerfiles y este compose son infraestructura de la cátedra:
+# NO se modifican en la entrega.
+# ──────────────────────────────────────────────────────────────────────────
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    # Las credenciales de DEV. En producción van por secret manager.
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: authz
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      # Expuesto para que el dev local con `uv run` (opción B) use la MISMA
+      # DB. Si tenés un postgres local en 5432, cambiá el mapeo a 5433:5432
+      # y ajustá DATABASE_URL en backend/app/config.py.
+      - "5432:5432"
+    healthcheck:
+      # Si postgres no está healthy, el backend no arranca (depends_on)
+      test: ["CMD-SHELL", "pg_isready -U app -d authz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    # ENVIRONMENT=development → config.py usa defaults de dev (SECRET_KEY
+    # de desarrollo). En producción se pasa por secret manager, jamás acá.
+    environment:
+      ENVIRONMENT: development
+      # Dentro de la red de Compose el postgres se llama `postgres`.
+      # Para desarrollo local: DATABASE_URL=postgresql+psycopg://app:app@localhost:5432/authz
+      DATABASE_URL: postgresql+psycopg://app:app@postgres:5432/authz
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      # python (slim no trae curl) → chequea /api/health
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      # Dentro de la red de Compose el backend se llama `backend` (no
+      # localhost). Vite lee esta var para configurar el proxy /api.
+      VITE_PROXY_TARGET: http://backend:8000
+    ports:
+      - "5173:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+    # Volumen nombrado: sobrevive a `down` y a los rebuilds de backend.
+    # Se borra SOLO con `docker compose down -v` (a propósito).

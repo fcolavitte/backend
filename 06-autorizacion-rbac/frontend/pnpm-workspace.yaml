@@ -1,0 +1,7 @@
+# pnpm 11+: la config de builds aprobados vive acá como MAPA `allowBuilds`
+# (la key onlyBuiltDependencies se eliminó en pnpm 11 y se ignora).
+# esbuild necesita correr su postinstall (descarga el binario nativo de Vite);
+# sin este permiso, `pnpm install` falla con ERR_PNPM_IGNORED_BUILDS, tanto
+# en dev local como en la imagen docker.
+allowBuilds:
+  esbuild: true
