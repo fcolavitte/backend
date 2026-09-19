@@ -107,7 +107,18 @@ def require_role(required: Role) -> Callable:
         #    if current_user.role != required:
         #        raise HTTPException(status_code=403, detail=...)
         # ─────────────────────────────────────────────────────────────
+        credentials_exception = HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tenés el rol necesario para esta operación",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+        if current_user.role != required:
+            raise credentials_exception
+
         return current_user
+    
+        
     return checker
 
 
@@ -148,5 +159,17 @@ def require_scope(required: str) -> Callable:
         #    if required not in token_scope.split():
         #        raise HTTPException(status_code=403, detail=...)
         # ─────────────────────────────────────────────────────────────
+        
+        credentials_exception = HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tenés el rol necesario para esta operación",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
+        payload = request.state.token_payload
+        token_scope = payload.get("scope", "")
+        
+        if required not in token_scope.split():
+            raise credentials_exception
         return current_user
     return checker
