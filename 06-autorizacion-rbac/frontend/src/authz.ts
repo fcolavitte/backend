@@ -44,13 +44,19 @@ import type { DocumentRead, Role } from "./types";
 export function scopeAllowsWrite(scope: string | undefined): boolean {
   // 🔓 TODO: "read write" contiene "write"; "read" no.
   //   pista: scope?.split(" ").includes("write")
-  return true;
+  if( scope.split(" ").includes("write") ){
+	return true;
+  }
+  return false;
 }
 
 /** ¿Puede ver el panel de usuarios (GET /api/users)? Solo admin. */
 export function canManageUsers(role: Role | undefined): boolean {
   // 🔓 TODO: role === "admin"
-  return true;
+  if( role === "admin" ){
+	return true;
+  }
+  return false;
 }
 
 /** ¿Puede cambiar el rol de otro usuario (PATCH /users/{id}/role)? Solo admin. */
@@ -62,7 +68,10 @@ export function canChangeRole(role: Role | undefined): boolean {
 /** ¿Puede BORRAR documentos (DELETE /api/documents/{id})? Solo admin. */
 export function canDelete(role: Role | undefined): boolean {
   // 🔓 TODO: role === "admin"
-  return true;
+  if( role === "admin" ){
+	return true;
+  }
+  return false;
 }
 
 /**
@@ -73,7 +82,10 @@ export function canDelete(role: Role | undefined): boolean {
  */
 export function canEdit(userId: number, doc: DocumentRead, role: Role | undefined): boolean {
   // 🔓 TODO: doc.owner_id === userId || role === "admin"
-  return true;
+  if( doc.owner_id === userId || role === "admin" ){
+	return true;
+  }
+  return false;
 }
 
 /**
@@ -83,5 +95,8 @@ export function canEdit(userId: number, doc: DocumentRead, role: Role | undefine
  */
 export function canPublish(userId: number, doc: DocumentRead, role: Role | undefined): boolean {
   // 🔓 TODO: doc.owner_id === userId || role === "admin"
-  return true;
+  if( doc.owner_id === userId || role === "admin" ){
+	return true;
+  }
+  return false;
 }
